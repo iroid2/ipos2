@@ -1,0 +1,185 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+ 
+
+enum CustomerType {
+  RETAIL
+  WHOLESALE
+  DISTRIBUTOR
+  OTHER
+}
+
+model Customer {  
+  // Unique identifier for the customer  
+  id               String      @id @default(auto()) @map("_id") @db.ObjectId  
+  
+  // Customer type (e.g., individual, business)  
+  
+  customerType     CustomerType  
+  // Personal information  
+  firstName       String  
+  lastName        String  
+  phone           String      @unique  
+  gender          Gender  
+  
+  // Credit information  
+  maxCreditLimit  Float  
+  maxCreditDays   Int  
+  country         String  
+  location        String  
+  
+  // Identification and contact details  
+  taxPin          String?     // Optional tax identification number  
+  dob             DateTime?   // Optional date of birth  
+  email           String?     @unique // Optional email address  
+  NIN      String?     @unique // Optional national ID  
+  
+  
+  // Timestamps for record tracking  
+  createdAt       DateTime    @default(now()) // Automatically set to current time on creation  
+  updatedAt       DateTime    @updatedAt // Automatically updated to current time on update  
+}
+
+
+
+enum Role {
+  Admin 
+  ATTENDANT
+}
+enum Gender {
+  FEMALE
+  MALE 
+}
+model User{
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+ email          String @unique
+ username         String @unique
+ password         String
+   firstName          String
+   lastName          String
+   phone          String @unique
+   dob          DateTime?
+   role        Role @default(ATTENDANT)
+   gender       Gender
+   image        String
+   shop         Shop[]
+}
+ 
+model Shop {
+id String @id @default(auto()) @map("_id") @db.ObjectId // Unique ID
+name String // Shop name
+slug  String  @unique
+
+location String // Shop location/address
+createdAt DateTime @default(now()) // Timestamp of creation
+updatedAt DateTime @updatedAt // Timestamp of the last update
+adminId String  @db.ObjectId
+admin    User   @relation(fields: [adminId], references: [id]) //
+// Foreign key to the User model
+// Relation to the admin who manages the shop
+attendantIds String[] @db.ObjectId // Array of ObjectIds referencing
+// attendants
+}
+model Supplier {  
+  id                 String           @id @default(auto()) @map("_id") @db.ObjectId  
+  supplierType       SupplierType  
+  name               String  
+  contactPerson      String  
+  phone              String           @unique  
+  email              String?          @unique  
+  location           String
+  Products           Product[]  
+  country            String  
+  website            String?  
+  taxPin             String?  
+  regNumber String?          @unique  
+  bankAccountNumber  String?  
+  bankName           String?  
+  paymentTerms       String?  
+  logo               String?          @default("https://utfs.io/f/MWxllFya5oe9KgikLib5LJF8BPDI96EASG1hiTxwzyop4tZW")  
+  rating             Float?   
+  notes              String?  
+  createdAt          DateTime         @default(now())  
+  updatedAt          DateTime         @updatedAt  
+}  
+
+enum SupplierType {  
+  MANUFACTURER  
+  DISTRIBUTOR  
+  WHOLESALER  
+  RETAILER  
+  OTHER  
+}
+
+
+
+
+model Product {
+id String @id @default(auto()) @map("_id") @db.ObjectId
+name String
+description  String?
+batchNumber  String?
+barCode  String? @unique
+image  String?@default("https://utfs.io/f/MWxllFya5oe9KgikLib5LJF8BPDI96EASG1hiTxwzyop4tZW")
+tax   Int?
+alertQty     Int
+stockQty     Int
+price     Int
+buyingprice     Int?
+sku String @unique
+productCode String @unique
+slug String @unique
+supplierId String @db.ObjectId
+unitId String @db.ObjectId
+brandId String @db.ObjectId
+categoryId String @db.ObjectId
+expiryDate DateTime @default("2024-10-02T03:42:57.000Z")
+unit Unit @relation(fields: [unitId], references: [id])
+brand Brand @relation(fields: [brandId], references: [id])
+category Category @relation(fields: [categoryId], references: [id])
+supplier Supplier @relation(fields: [supplierId], references: [id])
+createdAt DateTime @default(now())
+updatedAt DateTime @updatedAt
+}
+ 
+model Category {
+id String @id @default(auto()) @map("_id") @db.ObjectId
+name String
+slug String @unique
+products Product[]
+createdAt DateTime @default(now())
+updatedAt DateTime @updatedAt
+}
+ 
+ model Brand {
+id String @id @default(auto()) @map("_id") @db.ObjectId
+name String
+slug String @unique
+products Product[]
+createdAt DateTime @default(now())
+updatedAt DateTime @updatedAt
+}
+
+ 
+model Unit {
+  id              String          @id @default(auto()) @map("_id") @db.ObjectId
+  name            String
+  abbreviation    String
+  slug            String          @unique
+  products        Product[]
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+}
+ 
